@@ -12,28 +12,54 @@
 WebServer server(80);
 IRMitsubishiAC ac(IR_PIN);
 
-void connectWifi() {
+bool connectWifi() {
   Serial.println();
   Serial.println("WiFi connecting...");
 
   WiFi.mode(WIFI_STA);
   WiFi.setSleep(false);
-  WiFi.disconnect();
-  delay(500);
 
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  for (int attempt = 1; attempt <= 5; attempt++) {
+    Serial.print("WiFi attempt ");
+    Serial.println(attempt);
 
-  Serial.println();
+    // 初期化
+    WiFi.disconnect();
+    WiFi.mode(WIFI_OFF);
+    delay(1000);
 
-  while (WiFi.status() != WL_CONNECTED) {
+    // 再接続
+    WiFi.mode(WIFI_STA);
+    WiFi.setSleep(false);
     delay(500);
-    Serial.print(".");
+
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+    // unsigned long: 負の数を扱わない
+    unsigned long start = millis(); // millis(): 電源を入れてから何ミリ秒たったか
+
+    while (WiFi.status() != WL_CONNECTED && millis() - start < 20000) {
+      delay(500);
+      Serial.print(".");
+    }
+
+    // 接続成功
+    Serial.println();
+
+    if (WiFi.status() == WL_CONNECTED) {
+      Serial.println("WiFi connected");
+      Serial.print("IP address:");
+      Serial.println(WiFi.localIP());
+      return true;
+    }
+
+    // 接続失敗
+    Serial.print("WiFi failed. status=");
+    Serial.println(WiFi.status());
+    delay(2000);
   }
 
-  Serial.println("WiFi connected");
-  Serial.print("IP address:");
-  Serial.println(WiFi.localIP());
-
+  return false;
 }
 
 void handleRoot() {
@@ -77,7 +103,10 @@ void setup() {
 
   ac.begin();
 
-  connectWifi();
+  if (!connectWifi()) {
+    Serial.println("WiFi connection failed after retries.");
+    return;
+  }
 
   server.on("/", handleRoot);
   server.on("/api/cool", handleCool);
