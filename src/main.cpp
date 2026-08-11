@@ -12,33 +12,7 @@
 WebServer server(80);
 IRMitsubishiAC ac(IR_PIN);
 
-void handleRoot() {
-  server.send(200, "text/plain", "ESP32 OK");
-}
-
-void handleCool() {
-  Serial.println("HTTP /cool");
-  
-  ac.begin();
-  delay(3000);
-
-  Serial.println("Send Cool 26");
-
-  ac.on();
-  ac.setMode(kMitsubishiAcCool);
-  ac.setTemp(26);
-  ac.setFan(kMitsubishiAcFanAuto);
-  ac.send();
-
-  server.send(200, "text/plain", "OK");
-
-}
-
-void setup() {
-  Serial.begin(115200);
-  delay(1000);
-
-  // WiFi接続
+void connectWifi() {
   Serial.println();
   Serial.println("WiFi connecting...");
 
@@ -60,8 +34,54 @@ void setup() {
   Serial.print("IP address:");
   Serial.println(WiFi.localIP());
 
+}
+
+void handleRoot() {
+  server.send(200, "text/plain", "ESP32 OK");
+}
+
+// エアコン処理
+void sendOff() {
+  ac.off();
+  ac.send();
+}
+
+void sendCool() {
+  ac.on();
+  ac.setMode(kMitsubishiAcCool);
+  ac.setTemp(26);
+  ac.setFan(kMitsubishiAcFanAuto);
+  ac.send();
+}
+
+// ハンドラ
+void handleOff() {
+  Serial.println("HTTP /off");
+
+  sendOff();
+
+  server.send(200, "text/plain", "OK");
+}
+
+void handleCool() {
+  Serial.println("HTTP /cool");
+
+  sendCool();
+
+  server.send(200, "text/plain", "OK");
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+
+  ac.begin();
+
+  connectWifi();
+
   server.on("/", handleRoot);
-  server.on("/cool", handleCool);
+  server.on("/api/cool", handleCool);
+  server.on("/api/off", handleOff);
 
   server.begin();
   Serial.println("HTTP server started");
