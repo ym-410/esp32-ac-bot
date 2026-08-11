@@ -80,9 +80,17 @@ void sendCool() {
   ac.send();
 }
 
+void sendHeat() {
+  ac.on();
+  ac.setMode(kMitsubishiAcHeat);
+  ac.setTemp(27);
+  ac.setFan(kMitsubishiAcFanAuto);
+  ac.send();
+}
+
 // ハンドラ
 void handleOff() {
-  Serial.println("HTTP /off");
+  Serial.println("HTTP /api/off");
 
   sendOff();
 
@@ -90,9 +98,17 @@ void handleOff() {
 }
 
 void handleCool() {
-  Serial.println("HTTP /cool");
+  Serial.println("HTTP /api/cool");
 
   sendCool();
+
+  server.send(200, "text/plain", "OK");
+}
+
+void handleHeat() {
+  Serial.println("HTTP /api/heat");
+
+  sendHeat();
 
   server.send(200, "text/plain", "OK");
 }
@@ -109,8 +125,9 @@ void setup() {
   }
 
   server.on("/", handleRoot);
-  server.on("/api/cool", handleCool);
   server.on("/api/off", handleOff);
+  server.on("/api/cool", handleCool);
+  server.on("/api/heat", handleHeat);
 
   server.begin();
   Serial.println("HTTP server started");
