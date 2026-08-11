@@ -94,7 +94,7 @@ void handleOff() {
 
   sendOff();
 
-  server.send(200, "text/plain", "OK");
+  server.send(200, "text/plain", "Send Off");
 }
 
 void handleCool() {
@@ -113,7 +113,7 @@ void handleCool() {
 
   sendCool(temp);
 
-  server.send(200, "text/plain", "OK");
+  server.send(200, "text/plain", "OK Cool" + String(temp));
 }
 
 void handleHeat() {
@@ -132,7 +132,7 @@ void handleHeat() {
 
   sendHeat(temp);
 
-  server.send(200, "text/plain", "OK");
+  server.send(200, "text/plain", "OK heat" + String(temp));
 }
 
 void setup() {
