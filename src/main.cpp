@@ -72,18 +72,18 @@ void sendOff() {
   ac.send();
 }
 
-void sendCool() {
+void sendCool(uint8_t temp) {
   ac.on();
   ac.setMode(kMitsubishiAcCool);
-  ac.setTemp(26);
+  ac.setTemp(temp);
   ac.setFan(kMitsubishiAcFanAuto);
   ac.send();
 }
 
-void sendHeat() {
+void sendHeat(uint8_t temp) {
   ac.on();
   ac.setMode(kMitsubishiAcHeat);
-  ac.setTemp(27);
+  ac.setTemp(temp);
   ac.setFan(kMitsubishiAcFanAuto);
   ac.send();
 }
@@ -100,7 +100,18 @@ void handleOff() {
 void handleCool() {
   Serial.println("HTTP /api/cool");
 
-  sendCool();
+  int temp = server.arg("temp").toInt();
+  
+  if (!server.hasArg("temp")) {
+    temp = 26;
+  }
+
+  if (temp < 16 || temp > 31) {
+    server.send(400, "text/plain", "Invalid temp");
+    return;
+  }
+
+  sendCool(temp);
 
   server.send(200, "text/plain", "OK");
 }
@@ -108,7 +119,18 @@ void handleCool() {
 void handleHeat() {
   Serial.println("HTTP /api/heat");
 
-  sendHeat();
+  int temp = server.arg("temp").toInt();
+  
+  if (!server.hasArg("temp")) {
+    temp = 26;
+  }
+
+  if (temp < 16 || temp > 31) {
+    server.send(400, "text/plain", "Invalid temp");
+    return;
+  }
+
+  sendHeat(temp);
 
   server.send(200, "text/plain", "OK");
 }
