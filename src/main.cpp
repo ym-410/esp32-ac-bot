@@ -72,6 +72,13 @@ void sendOff() {
   ac.send();
 }
 
+void sendDry() {
+  ac.on();
+  ac.setMode(kMitsubishiAcDry);
+  ac.setFan(kMitsubishiAcFanAuto);
+  ac.send();
+}
+
 void sendCool(uint8_t temp) {
   ac.on();
   ac.setMode(kMitsubishiAcCool);
@@ -95,6 +102,14 @@ void handleOff() {
   sendOff();
 
   server.send(200, "text/plain", "Send Off");
+}
+
+void handleDry() {
+  Serial.println("HTTP /api/dry");
+
+  sendDry();
+
+  server.send(200, "text/plain", "Send Dry");
 }
 
 void handleCool() {
@@ -122,7 +137,7 @@ void handleHeat() {
   int temp = server.arg("temp").toInt();
   
   if (!server.hasArg("temp")) {
-    temp = 26;
+    temp = 27;
   }
 
   if (temp < 16 || temp > 31) {
@@ -148,6 +163,7 @@ void setup() {
 
   server.on("/", handleRoot);
   server.on("/api/off", handleOff);
+  server.on("/api/dry", handleDry);
   server.on("/api/cool", handleCool);
   server.on("/api/heat", handleHeat);
 
